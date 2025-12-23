@@ -74,7 +74,11 @@ func handleWebsearch(
 	}
 
 	// Search using SearxNG
+	searchStart := time.Now()
 	results, err := websearch.Search(ctx, config.SearxngURL, input.Query, limit)
+	searchDuration := time.Since(searchStart)
+	config.Logger.Debug("SearxNG search", "query", input.Query, "duration_ms", searchDuration.Milliseconds())
+
 	if err != nil {
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{
@@ -100,8 +104,16 @@ func handleWebsearch(
 				fetchCtx, cancel := context.WithTimeout(gctx, 5*time.Second)
 				defer cancel()
 
+				fetchStart := time.Now()
 				content, err := websearch.Fetch(fetchCtx, result.URL, 5*time.Second)
+				fetchDuration := time.Since(fetchStart)
+
 				if err != nil {
+					config.Logger.Debug("result fetch failed",
+						"index", i+1,
+						"url", result.URL,
+						"fetch_ms", fetchDuration.Milliseconds(),
+						"error", err)
 					// Skip failed fetches, still return snippet
 					outputs[i] = SearchResultOutput{
 						Title:   result.Title,
@@ -112,8 +124,17 @@ func handleWebsearch(
 				}
 
 				// Summarize the content
-				summary, err := summarizer.Summarize(gctx, content, input.Query, maxSummaryTokens)
+				summarizeStart := time.Now()
+				summary, err := summarizer.Summarize(gctx, content, input.Query, result.URL, maxSummaryTokens)
+				summarizeDuration := time.Since(summarizeStart)
+
 				if err != nil {
+					config.Logger.Debug("result summarize failed",
+						"index", i+1,
+						"url", result.URL,
+						"fetch_ms", fetchDuration.Milliseconds(),
+						"summarize_ms", summarizeDuration.Milliseconds(),
+						"error", err)
 					// Skip failed summarizations, still return snippet
 					outputs[i] = SearchResultOutput{
 						Title:   result.Title,
@@ -122,6 +143,13 @@ func handleWebsearch(
 					}
 					return nil
 				}
+
+				config.Logger.Debug("result processed",
+					"index", i+1,
+					"url", result.URL,
+					"fetch_ms", fetchDuration.Milliseconds(),
+					"summarize_ms", summarizeDuration.Milliseconds(),
+					"summary_len", len(summary))
 
 				outputs[i] = SearchResultOutput{
 					Title:   result.Title,

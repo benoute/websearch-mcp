@@ -4,7 +4,9 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -20,6 +22,7 @@ type Config struct {
 	OpenAIAPIKey    string
 	IsHTTP          bool
 	Port            string
+	Logger          *slog.Logger
 }
 
 func main() {
@@ -30,6 +33,7 @@ func main() {
 	openaiAPIKeyEnv := flag.String("openai-api-key-env", "OPENAI_API_KEY", "Environment variable name for the OpenAI API key")
 	isHTTP := flag.Bool("http", false, "Run as HTTP server instead of stdio")
 	port := flag.String("port", "8080", "Port for HTTP mode")
+	debug := flag.Bool("debug", false, "Enable debug output with timing information")
 
 	flag.Parse()
 
@@ -55,6 +59,20 @@ func main() {
 	}
 
 	// Build config
+	var logLevel slog.Level
+	if *debug {
+		logLevel = slog.LevelDebug
+	} else {
+		logLevel = slog.LevelInfo
+	}
+
+	var logOutput io.Writer
+	if *isHTTP {
+		logOutput = os.Stdout
+	} else {
+		logOutput = os.Stderr
+	}
+
 	config := Config{
 		SearxngURL:      *searxngURL,
 		OpenAIBaseURL:   *openaiBaseURL,
@@ -62,6 +80,15 @@ func main() {
 		OpenAIAPIKey:    openaiAPIKey,
 		IsHTTP:          *isHTTP,
 		Port:            *port,
+		Logger: slog.New(slog.NewTextHandler(logOutput, &slog.HandlerOptions{
+			Level: logLevel,
+			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+				if a.Key == slog.TimeKey {
+					return slog.String(slog.TimeKey, a.Value.Time().Format("15:04:05"))
+				}
+				return a
+			},
+		})),
 	}
 
 	// Setup MCP server

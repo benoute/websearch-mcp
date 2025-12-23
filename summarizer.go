@@ -40,10 +40,12 @@ func NewSummarizer(baseURL, apiKey, model string) *Summarizer {
 }
 
 // Summarize creates a summary of the given content relevant to the search query.
-func (s *Summarizer) Summarize(ctx context.Context, content, query string, maxTokens int) (string, error) {
-	systemPrompt := fmt.Sprintf("You are a helpful assistant that summarizes web content. Given web page content and a search query, provide a concise and relevant summary that focuses on information related to the query. Be factual and informative. Keep your summary under %d tokens.", maxTokens)
+func (s *Summarizer) Summarize(ctx context.Context, content, query, url string, maxTokens int) (string, error) {
+	systemPrompt := fmt.Sprintf(`You are a helpful assistant that summarizes web content. Given web page content and a search query, provide a concise and relevant summary that focuses on information related to the query. Be factual and informative.
 
-	userMessage := fmt.Sprintf("Search query: %s\n\nContent to summarize:\n%s", query, content)
+You MUST keep your summary under %d tokens. Do not prefix your response with "Summary" or any similar heading, as your output will be placed directly under a 'summary' field.`, maxTokens)
+
+	userMessage := fmt.Sprintf("Search query: %s\n\nURL: %s\n\nContent to summarize:\n%s", query, url, content)
 
 	resp, err := s.client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
 		Model: s.model,
@@ -57,7 +59,7 @@ func (s *Summarizer) Summarize(ctx context.Context, content, query string, maxTo
 				Content: userMessage,
 			},
 		},
-		MaxTokens: maxTokens,
+		MaxTokens: maxTokens * 5 / 4,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to create chat completion: %w", err)
