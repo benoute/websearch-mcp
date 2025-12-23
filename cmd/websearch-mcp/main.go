@@ -25,9 +25,9 @@ type Config struct {
 func main() {
 	// Define CLI flags
 	searxngURL := flag.String("searxng-url", "", "Base URL of the SearxNG instance (required)")
-	openaiBaseURL := flag.String("openai-base-url", "", "Base URL of the OpenAI-compatible LLM API (required)")
+	openaiBaseURL := flag.String("openai-base-url", "", "Base URL of the OpenAI-compatible provider API (required)")
 	summarizerModel := flag.String("summarizer-model", "", "Model name to use for summarization (required)")
-	openaiAPIKeyEnv := flag.String("openai-api-key-env", "LLM_API_KEY", "Environment variable name for the OpenAI API key")
+	openaiAPIKeyEnv := flag.String("openai-api-key-env", "OPENAI_API_KEY", "Environment variable name for the OpenAI API key")
 	isHTTP := flag.Bool("http", false, "Run as HTTP server instead of stdio")
 	port := flag.String("port", "8080", "Port for HTTP mode")
 
