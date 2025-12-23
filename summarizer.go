@@ -41,7 +41,7 @@ func NewSummarizer(baseURL, apiKey, model string) *Summarizer {
 
 // Summarize creates a summary of the given content relevant to the search query.
 func (s *Summarizer) Summarize(ctx context.Context, content, query string, maxTokens int) (string, error) {
-	systemPrompt := "You are a helpful assistant that summarizes web content. Given web page content and a search query, provide a concise and relevant summary that focuses on information related to the query. Be factual and informative."
+	systemPrompt := fmt.Sprintf("You are a helpful assistant that summarizes web content. Given web page content and a search query, provide a concise and relevant summary that focuses on information related to the query. Be factual and informative. Keep your summary under %d tokens.", maxTokens)
 
 	userMessage := fmt.Sprintf("Search query: %s\n\nContent to summarize:\n%s", query, content)
 
