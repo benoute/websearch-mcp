@@ -5,8 +5,6 @@ go 1.24.0
 require (
 	github.com/modelcontextprotocol/go-sdk v1.1.0
 	github.com/rs/cors v1.11.1
-	github.com/sashabaranov/go-openai v1.36.1
-	golang.org/x/sync v0.19.0
 )
 
 require (

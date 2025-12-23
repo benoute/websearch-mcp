@@ -16,21 +16,15 @@ import (
 
 // Config holds the configuration for the MCP server.
 type Config struct {
-	SearxngURL      string
-	OpenAIBaseURL   string
-	SummarizerModel string
-	OpenAIAPIKey    string
-	IsHTTP          bool
-	Port            string
-	Logger          *slog.Logger
+	SearxngURL string
+	IsHTTP     bool
+	Port       string
+	Logger     *slog.Logger
 }
 
 func main() {
 	// Define CLI flags
 	searxngURL := flag.String("searxng-url", "", "Base URL of the SearxNG instance (required)")
-	openaiBaseURL := flag.String("openai-base-url", "", "Base URL of the OpenAI-compatible provider API (required)")
-	summarizerModel := flag.String("summarizer-model", "", "Model name to use for summarization (required)")
-	openaiAPIKeyEnv := flag.String("openai-api-key-env", "OPENAI_API_KEY", "Environment variable name for the OpenAI API key")
 	isHTTP := flag.Bool("http", false, "Run as HTTP server instead of stdio")
 	port := flag.String("port", "8080", "Port for HTTP mode")
 	debug := flag.Bool("debug", false, "Enable debug output with timing information")
@@ -40,21 +34,6 @@ func main() {
 	// Validate required flags
 	if *searxngURL == "" {
 		fmt.Fprintln(os.Stderr, "error: -searxng-url is required")
-		os.Exit(1)
-	}
-	if *openaiBaseURL == "" {
-		fmt.Fprintln(os.Stderr, "error: -openai-base-url is required")
-		os.Exit(1)
-	}
-	if *summarizerModel == "" {
-		fmt.Fprintln(os.Stderr, "error: -summarizer-model is required")
-		os.Exit(1)
-	}
-
-	// Get and validate the OpenAI API key from environment
-	openaiAPIKey := os.Getenv(*openaiAPIKeyEnv)
-	if openaiAPIKey == "" {
-		fmt.Fprintf(os.Stderr, "error: environment variable %s must be set and non-empty\n", *openaiAPIKeyEnv)
 		os.Exit(1)
 	}
 
@@ -74,12 +53,9 @@ func main() {
 	}
 
 	config := Config{
-		SearxngURL:      *searxngURL,
-		OpenAIBaseURL:   *openaiBaseURL,
-		SummarizerModel: *summarizerModel,
-		OpenAIAPIKey:    openaiAPIKey,
-		IsHTTP:          *isHTTP,
-		Port:            *port,
+		SearxngURL: *searxngURL,
+		IsHTTP:     *isHTTP,
+		Port:       *port,
 		Logger: slog.New(slog.NewTextHandler(logOutput, &slog.HandlerOptions{
 			Level: logLevel,
 			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
