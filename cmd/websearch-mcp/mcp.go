@@ -11,8 +11,8 @@ import (
 )
 
 type websearchToolInput struct {
-	Query string `json:"query" jsonschema:"required" jsonschema_description:"The search query. Optionally add 'site:website.com' in the search query to search within a specific website (website.com in this example)`
-	Limit int    `json:"limit,omitempty" jsonschema_description:"Maximum number of search results (default: 10)"`
+	Query string `json:"query" jsonschema:"The search query (required). Add 'site:website.com' in the search query to target the search within a specific website (website.com in this example)"`
+	Limit int    `json:"limit,omitempty" jsonschema:"Maximum number of search results (default: 10)"`
 }
 
 type SearchResultOutput struct {
